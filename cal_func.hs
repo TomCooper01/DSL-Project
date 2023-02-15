@@ -11,8 +11,11 @@ data Expr where
     While :: Expr -> Expr -> Expr
     If :: Expr -> Expr -> Expr -> Expr
     Equality :: Expr -> Expr -> Expr
+    NotEqual :: Expr -> Expr -> Expr
     LessThan :: Expr -> Expr -> Expr
+    LessThanEq :: Expr -> Expr -> Expr
     GreaterThan :: Expr -> Expr -> Expr
+    GreaterThanEq :: Expr -> Expr -> Expr
     deriving (Show)
 
 type Env = [(String, Expr)]
@@ -31,15 +34,22 @@ instance Num Expr where
     signum :: Expr -> Expr
     signum = undefined  -- Add
 
---instance Eq Expr where
---    (==) :: Expr -> Expr -> Expr
---    e1 == e2 = Equality e1 e2
+instance Eq Expr where
+    (==) :: Expr -> Expr -> Expr
+    e1 == e2 = Equality e1 e2
+    (/=) :: Expr -> Expr -> Expr
+    e1 /= e2 = NotEqual e1 e2
 
---instance Ord Expr where
---    (<=) :: Expr -> Expr -> Expr
---    e1 <= e2 = LessThan e1 e2
---    (>=) :: Expr -> Expr -> Expr
---    e1 >= e2 = GreaterThan e1 e2
+
+instance Ord Expr where
+    (<=) :: Expr -> Expr -> Expr
+    e1 <= e2 = LessThanEq e1 e2
+    (>=) :: Expr -> Expr -> Expr
+    e1 >= e2 = GreaterThanEq e1 e2
+    (<) :: Expr -> Expr -> Expr
+    e1 < e2 = LessThan e1 e2
+    (>) :: Expr -> Expr -> Expr
+    e1 > e2 = GreaterThan e1 e2
     
 
 instance Fractional Expr where
@@ -86,3 +96,13 @@ if_ = If
 
 while_ :: Expr -> Expr -> Expr
 while_ = While
+
+main :: IO ()
+main = do
+    let env = []
+        e = Assign "x" (Int 0) `seq_`
+            Assign "y" (Int 0) `seq_`
+            --while_ (Var "x" < 10)
+                (Assign "x" (Var "x" + 1) `seq_`
+                 Assign "y" (Var "y" + 1))
+    print $ run env e
